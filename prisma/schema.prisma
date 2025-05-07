@@ -1,0 +1,64 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl      = env("DIRECT_URL")
+}
+
+// Prisma Client generator: generates the Prisma Client JS API for type-safe database access
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            Int         @id @default(autoincrement())
+  email         String      @unique
+  passwordHash  String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // One-to-many relation to job applications owned by this user
+  applications  Application[]
+}
+
+model Application {
+  id            Int         @id @default(autoincrement())
+  // many applications belong to one user
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  company       String
+  role          String
+  status        ApplicationStatus @default(APPLIED)
+  appliedDate   DateTime
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Many-to-many relation to Tag via ApplicationTag
+  tags          ApplicationTag[]
+}
+
+enum ApplicationStatus {
+  APPLIED
+  INTERVIEWING
+  OFFER
+  REJECTED
+}
+
+model Tag {
+  id            Int          @id @default(autoincrement())
+  name          String       @unique
+  // Many-to-many relation to Application via ApplicationTag
+  application   ApplicationTag[]
+}
+
+// Join table to implement many-to-many between Application and Tag
+
+model ApplicationTag {
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId Int
+  tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId         Int
+
+  // Composite primary key prevents duplicate associations
+  @@id([applicationId, tagId])
+}
