@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction, ErrorRequestHandler } from "e
 // import { prisma } from "./config/database";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
+import applicationRoutes from "./routes/application.routes";
 
 dotenv.config();
 const app = express();
@@ -18,8 +19,11 @@ app.use(express.json());
 //     });
 // });
 
-// Mount auth routes
+// Public auth routes
 app.use("/auth", authRoutes);
+
+// Protected application CRUD routes
+app.use("/applications", applicationRoutes);
 
 // Example protected route
 import { requireAuth, AuthRequest } from "./middleware/auth.middleware";
