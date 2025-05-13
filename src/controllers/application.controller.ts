@@ -24,7 +24,19 @@ export async function listAppsController(
 ): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const items = await appService.getApplications(userId);
+    const { status, company, sortBy = "appliedDate", order = "desc" } = req.query as any;
+
+    const items = await appService.getApplications(userId, {
+      status,
+      company,
+      sortBy,
+      order,
+    });
+    // const items = await appService.getApplications(userId);
+    // if (!items) {
+    //   res.status(404).json({ error: "No Applications found" });
+    //   return;
+    // }
     res.json(items);
   } catch (err) {
     next(err);
@@ -75,7 +87,7 @@ export async function deleteAppController(
     const userId = req.user!.userId;
     const id = Number(req.params.id);
     await appService.deleteApplication(userId, id);
-    res.status(204).send();
+    res.status(204).json({ message: "Application deleted" })
   } catch (err) {
     next(err);
   }

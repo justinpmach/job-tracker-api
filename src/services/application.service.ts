@@ -25,12 +25,34 @@ export async function createApplication(
   })
 }
 
-export async function getApplications(userId: number) {
+export interface ListOptions {
+  status?: string;
+  company?: string;
+  sortBy?: "appliedDate" | "createdAt";
+  order?: "asc" | "desc";
+}
+
+export async function getApplications(
+  userId: number,
+  options: ListOptions = {}
+) {
+  const where: any = { userId };
+  if (options.status) where.status = options.status;
+  if (options.company) where.company = { contains: options.company, mode: "insensitive" };
+
   return prisma.application.findMany({
-    where: { userId },
-    orderBy: { appliedDate: "desc" },
+    where,
+    orderBy: {
+      [options.sortBy!]: options.order
+    },
   });
 }
+// export async function getApplications(userId: number) {
+//   return prisma.application.findMany({
+//     where: { userId },
+//     orderBy: { appliedDate: "desc" },
+//   });
+// }
 
 export async function getApplicationById(userId: number, id: number) {
   return prisma.application.findFirst({
